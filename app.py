@@ -144,8 +144,8 @@ def visualize_nfa(start, end, transitions):
     # Layout and draw
     plt.figure(figsize=(12, 8))
     
-    # Use a more structured layout for clearer visualization
-    pos = nx.kamada_kawai_layout(G)
+    # Use spring layout instead of kamada_kawai_layout (which requires scipy)
+    pos = nx.spring_layout(G, k=0.30, iterations=50, seed=42)  # Added seed for consistency
     
     # Draw nodes
     node_colors = [G.nodes[n].get('color', 'skyblue') for n in G.nodes()]
@@ -154,7 +154,7 @@ def visualize_nfa(start, end, transitions):
     # Draw labels
     nx.draw_networkx_labels(G, pos, font_size=12)
     
-    # Draw edges
+    # Draw edges with slight curve to avoid overlap
     nx.draw_networkx_edges(G, pos, arrowsize=20, width=1.5, connectionstyle='arc3,rad=0.1')
     
     # Draw edge labels
@@ -284,7 +284,11 @@ if regex_input:
                     that consumes the entire input string.
                     """)
         except Exception as e:
-            st.error(f"Error processing regex: {e}")
+            st.error(f"Error processing regex: {str(e)}")
+            # Add debug information
+            st.error(f"Error type: {type(e).__name__}")
+            import traceback
+            st.error(f"Traceback: {traceback.format_exc()}")
 
 # Information about the project
 with st.sidebar:
