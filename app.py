@@ -1,5 +1,7 @@
 import streamlit as st
-from graphviz import Digraph
+import networkx as nx
+import matplotlib.pyplot as plt
+from io import BytesIO
 
 # Helper functions from your original code (regex -> postfix -> NFA)
 def infix_to_postfix(regex):
@@ -74,15 +76,24 @@ def build_nfa(postfix):
             stack.append((start, end, transitions))
     return stack[0]
 
-def visualize_nfa(start, end, transitions):
-    dot = Digraph()
-    dot.attr(rankdir='LR')
-    dot.node('start', shape='point')
-    dot.edge('start', start.id)
+# Function to visualize NFA using networkx and matplotlib
+def visualize_nfa_with_nx(start, end, transitions):
+    G = nx.DiGraph()
+    G.add_node('start', shape='point')
     for a, sym, b in transitions:
-        dot.edge(a, b, label=sym)
-    dot.node(end.id, shape='doublecircle')
-    return dot
+        G.add_edge(a, b, label=sym)
+    G.add_node(end.id, shape='doublecircle')
+
+    pos = nx.spring_layout(G)
+    nx.draw(G, pos, with_labels=True, node_size=5000, node_color='skyblue', font_size=10)
+    labels = nx.get_edge_attributes(G, 'label')
+    nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
+    
+    # Save the plot to a BytesIO object to display it in Streamlit
+    buf = BytesIO()
+    plt.savefig(buf, format="png")
+    buf.seek(0)
+    return buf
 
 # Streamlit Interface
 st.title("Regex to NFA Converter")
@@ -95,11 +106,9 @@ if regex_input:
     postfix = infix_to_postfix(regex_input)
     State.count = 0
     start, end, transitions = build_nfa(postfix)
-    nfa_graph = visualize_nfa(start, end, transitions)
     
-    # Display NFA graph
-    nfa_graph_path = "nfa_output.png"
-    nfa_graph.render(nfa_graph_path, format='png', cleanup=False)
-    
-    st.image(nfa_graph_path)
+    # Visualize NFA and display the plot in Streamlit
+    buf = visualize_nfa_with_nx(start, end, transitions)
+    st.image(buf)
+
 
