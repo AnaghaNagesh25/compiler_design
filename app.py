@@ -266,7 +266,7 @@ if regex_input:
                 # Display the NFA diagram
                 st.subheader("NFA Diagram")
                 buf = visualize_nfa(start, end, transitions)
-                st.image(buf, use_column_width=True)
+                st.image(buf, use_container_width=True)
                 
                 # Explain NFA
                 with st.expander("NFA Explanation", expanded=True):
